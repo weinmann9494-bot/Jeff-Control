@@ -4,29 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jeff Control</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#121212">
     <style>
         :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #ffffff;
-            --accent-color: #00ff88;
-            --screen-bg: #000000;
-            --eye-color: var(--accent-color);
-        }
-
-        .child-mode {
-            --bg-color: #f0faff;
-            --card-bg: #ffffff;
-            --text-color: #004d40;
-            --accent-color: #ff4081;
-            --screen-bg: #0a0a0a;
-            --eye-color: #ff4081;
+            --bg-color: #0f1115;
+            --card-bg: #181b20;
+            --text-color: #e0e6ed;
+            --accent-color: #00ffaa;
+            --screen-bg: #050608;
         }
 
         body {
-            font-family: 'Poppins', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -34,269 +22,157 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: background-color 0.4s ease;
-            -webkit-user-select: none; user-select: none;
         }
 
-        .container { max-width: 480px; width: 100%; }
+        .container { max-width: 440px; width: 100%; }
 
         .card {
             background-color: var(--card-bg);
-            border-radius: 24px;
+            border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
             text-align: center;
-            transition: background-color 0.4s ease;
         }
 
-        /* --- JEFFS DISPLAY VIEW --- */
+        /* OLED Display Simulation (128x64 skaliert) */
         .robot-display {
             background-color: var(--screen-bg);
-            border: 4px solid #333;
-            border-radius: 24px;
+            border: 3px solid #2a2e37;
+            border-radius: 18px;
             width: 100%;
-            aspect-ratio: 4 / 3;
+            aspect-ratio: 2 / 1;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            position: relative;
             overflow: hidden;
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
+            box-shadow: inset 0 0 20px rgba(0, 255, 170, 0.05);
         }
 
-        #jeff-face-svg { width: 100%; height: 100%; }
+        #jeff-face-svg { width: 90%; height: 75%; }
 
-        .eye-ball { fill: #ffffff; }
-        .eye-pupil { fill: var(--eye-color); transition: fill 0.3s ease; }
-        .eye-sparkle { fill: #ffffff; opacity: 0.9; }
-
-        @keyframes blink {
-            0%, 90%, 100% { transform: scaleY(1); }
-            95% { transform: scaleY(0.05); }
-        }
-        .blinking-eyes {
-            transform-box: fill-box;
-            transform-origin: center;
-            animation: blink 4s infinite;
-        }
-
-        #mouth-path {
-            stroke: var(--eye-color);
-            stroke-width: 8;
-            stroke-linecap: round;
-            fill: none;
-            transition: stroke 0.3s ease;
-        }
-
-        .status-text { color: #888; font-size: 0.9em; margin-top: 12px; }
-        .btn-group { display: flex; gap: 12px; margin-top: 15px; }
-
-        button {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1em;
-            cursor: pointer;
-            background-color: #333;
-            color: #ccc;
+        .eye-shape {
+            fill: var(--accent-color);
+            filter: drop-shadow(0px 0px 6px var(--accent-color));
             transition: all 0.2s ease;
         }
 
-        .active-mode {
-            background-color: var(--accent-color) !important;
-            color: white !important;
-        }
-
-        .install-btn {
-            background-color: #ff9800;
-            color: white;
+        .screen-text {
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--accent-color);
             width: 100%;
-            margin-bottom: 20px;
+            text-align: left;
+            padding-left: 15px;
+            margin-top: -5px;
+            opacity: 0.8;
         }
 
-        .hardware-box {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
+        .status-text { color: #8a94a6; font-size: 0.9em; margin-top: 12px; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--accent-color);
+            color: #050608;
+            margin-top: 10px;
         }
 
+        .hardware-box { display: flex; gap: 10px; margin-top: 12px; }
         .hardware-box input {
-            flex: 2;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #222;
-            color: #fff;
-            text-align: center;
-        }
-
-        .hardware-box button {
-            flex: 1;
-            padding: 10px;
-            font-size: 0.85em;
+            flex: 2; padding: 12px; border-radius: 10px;
+            border: 1px solid #2a2e37; background: #0f1115; color: #fff; text-align: center;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button id="installBtn" class="install-btn" style="display:none;">📲 Jeff-App installieren</button>
-
-    <!-- Simuliertes Display / Live View -->
+    <!-- Display View -->
     <div class="card">
         <div class="robot-display">
-            <svg id="jeff-face-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-                <g class="blinking-eyes">
-                    <g id="eye-left-group">
-                        <ellipse class="eye-ball" cx="130" cy="110" rx="35" ry="48"/>
-                        <ellipse class="eye-pupil" id="pupil-left" cx="130" cy="115" rx="20" ry="28"/>
-                        <circle class="eye-sparkle" cx="118" cy="95" r="8"/>
-                        <circle class="eye-sparkle" cx="140" cy="128" r="4"/>
-                    </g>
-
-                    <g id="eye-right-group">
-                        <ellipse class="eye-ball" cx="270" cy="110" rx="35" ry="48"/>
-                        <ellipse class="eye-pupil" id="pupil-right" cx="270" cy="115" rx="20" ry="28"/>
-                        <circle class="eye-sparkle" cx="258" cy="95" r="8"/>
-                        <circle class="eye-sparkle" cx="280" cy="128" r="4"/>
-                    </g>
-                </g>
-
-                <path id="mouth-path" d="M 150 210 Q 200 230 250 210" />
+            <svg id="jeff-face-svg" viewBox="0 0 128 48" xmlns="http://www.w3.org/2000/svg">
+                <!-- Linkes Auge -->
+                <rect id="eye-left" x="24" y="8" width="32" height="32" rx="8" class="eye-shape"/>
+                <!-- Rechtes Auge -->
+                <rect id="eye-right" x="72" y="8" width="32" height="32" rx="8" class="eye-shape"/>
             </svg>
+            <div class="screen-text" id="oledSubText">> Jeff ready...</div>
         </div>
-        <div class="status-text" id="statusLabel">Status: Simulation (Bereit)</div>
+        <div class="status-text" id="statusLabel">Status: Normaler Modus</div>
     </div>
 
-    <!-- Steuerung -->
+    <!-- Manuelle Test-Buttons für Zustände -->
     <div class="card">
-        <h3>Betriebsmodus</h3>
-        <div class="btn-group">
-            <button id="adultBtn" class="active-mode" onclick="setMode('adult')">👨 Erwachsener</button>
-            <button id="childBtn" onclick="setMode('child')">🎈 Kindermodus</button>
-        </div>
+        <h3 style="margin-top:0; font-size:1em;">Zustände testen</h3>
+        <button onclick="setVisualMode(0)">Normal</button>
+        <button onclick="setVisualMode(1)">Denken (Thinking)</button>
+        <button onclick="setVisualMode(2)">Reden (Speaking)</button>
+        <button onclick="setVisualMode(3)">Ausführen (Executing)</button>
     </div>
 
-    <!-- Vorbereitung für Hardware-Anbindung -->
+    <!-- Hardware Verbindung -->
     <div class="card">
-        <h3>Hardware-Verbindung</h3>
+        <h3 style="margin-top:0; font-size:1em;">ESP32-C3 Verbindung</h3>
         <div class="hardware-box">
-            <input type="text" id="espIp" placeholder="ESP32 IP (z.B. 192.168.1.50)">
+            <input type="text" id="espIp" placeholder="z. B. 192.168.1.50">
             <button onclick="connectEsp()">Verbinden</button>
         </div>
-        <div class="status-text" id="wsStatus">Offline (Kamera/OLED-Sync inaktiv)</div>
+        <div class="status-text" id="wsStatus">Offline</div>
     </div>
 </div>
 
 <script>
-    // --- Service Worker ---
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'block'; });
-    installBtn.addEventListener('click', () => { installBtn.style.display = 'none'; if (deferredPrompt) { deferredPrompt.prompt(); } });
+    const eyeLeft = document.getElementById('eye-left');
+    const eyeRight = document.getElementById('eye-right');
+    const oledSubText = document.getElementById('oledSubText');
+    const statusLabel = document.getElementById('statusLabel');
 
-    // --- MUND ANIMATION (Sprechen) ---
-    const mouthPath = document.getElementById('mouth-path');
-    let speechAnimationInterval;
-
-    function animateMouthSpeaking() {
-        if (speechAnimationInterval) clearInterval(speechAnimationInterval);
-        speechAnimationInterval = setInterval(() => {
-            const bend = 220 + (Math.random() * 30 - 15);
-            const wobble = 200 + (Math.random() * 20 - 10);
-            mouthPath.setAttribute('d', `M 150 210 Q ${wobble} ${bend} 250 210`);
-        }, 70);
-    }
-
-    function stopMouthAnimation() {
-        clearInterval(speechAnimationInterval);
-        mouthPath.setAttribute('d', "M 150 210 Q 200 230 250 210");
-    }
-
-    function speak(text) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'de-DE';
-            utterance.onstart = animateMouthSpeaking;
-            utterance.onend = stopMouthAnimation;
-            utterance.onerror = stopMouthAnimation;
-            window.speechSynthesis.speak(utterance);
+    function setVisualMode(mode, offX = 0, offY = 0) {
+        if (mode === 0) { // Normal
+            eyeLeft.setAttribute('y', 8 + offY); eyeLeft.setAttribute('height', '32'); eyeLeft.setAttribute('rx', '8');
+            eyeRight.setAttribute('y', 8 + offY); eyeRight.setAttribute('height', '32'); eyeRight.setAttribute('rx', '8');
+            oledSubText.innerText = "> Jeff ready...";
+            statusLabel.innerText = "Status: Normaler Modus";
+        } else if (mode === 1) { // Denken
+            eyeLeft.setAttribute('y', 6 + offY); eyeLeft.setAttribute('height', '28'); eyeLeft.setAttribute('rx', '10');
+            eyeRight.setAttribute('y', 6 + offY); eyeRight.setAttribute('height', '28'); eyeRight.setAttribute('rx', '10');
+            oledSubText.innerText = "> Thinking...";
+            statusLabel.innerText = "Status: Denkt nach...";
+        } else if (mode === 2) { // Reden
+            eyeLeft.setAttribute('y', 12 + offY); eyeLeft.setAttribute('height', '20'); eyeLeft.setAttribute('rx', '6');
+            eyeRight.setAttribute('y', 12 + offY); eyeRight.setAttribute('height', '20'); eyeRight.setAttribute('rx', '6');
+            oledSubText.innerText = "> Speaking...";
+            statusLabel.innerText = "Status: Spricht...";
+        } else if (mode === 3) { // Ausführen
+            eyeLeft.setAttribute('y', 18 + offY); eyeLeft.setAttribute('height', '12'); eyeLeft.setAttribute('rx', '2');
+            eyeRight.setAttribute('y', 18 + offY); eyeRight.setAttribute('height', '12'); eyeRight.setAttribute('rx', '2');
+            oledSubText.innerText = "> Executing task";
+            statusLabel.innerText = "Status: Führt Befehl aus...";
         }
     }
 
-    // --- PUPILLEN STEUERUNG ---
-    const pupilLeft = document.getElementById('pupil-left');
-    const pupilRight = document.getElementById('pupil-right');
-
-    window.addEventListener('mousemove', (e) => {
-        const offsetX = (e.clientX / window.innerWidth - 0.5) * 16;
-        const offsetY = (e.clientY / window.innerHeight - 0.5) * 12;
-        
-        pupilLeft.setAttribute('cx', 130 + offsetX);
-        pupilLeft.setAttribute('cy', 115 + offsetY);
-        pupilRight.setAttribute('cx', 270 + offsetX);
-        pupilRight.setAttribute('cy', 115 + offsetY);
-    });
-
-    // --- WEBSOCKET FÜR SPÄTERE ESP32 ANBINDUNG ---
     let ws;
     function connectEsp() {
-        const ip = document.getElementById('espIp').value;
+        const ip = document.getElementById('espIp'].value;
         const wsStatus = document.getElementById('wsStatus');
         if(!ip) return;
 
-        wsStatus.innerText = "Verbinde mit ESP32...";
         ws = new WebSocket(`ws://${ip}/ws`);
-
-        ws.onopen = () => {
-            wsStatus.innerText = "🟢 Mit ESP32-Hardware verbunden!";
-            wsStatus.style.color = "#00ff88";
-        };
-
+        ws.onopen = () => { wsStatus.innerText = "🟢 Verbunden!"; wsStatus.style.color = "#00ffaa"; };
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            // Empfange Live-Daten vom ESP32 OLED und spiegle sie auf der App
-            pupilLeft.setAttribute('cx', 130 + data.x);
-            pupilLeft.setAttribute('cy', 115 + data.y);
-            pupilRight.setAttribute('cx', 270 + data.x);
-            pupilRight.setAttribute('cy', 115 + data.y);
+            setVisualMode(data.mode, data.x, data.y);
         };
-
-        ws.onerror = () => {
-            wsStatus.innerText = "🔴 Verbindung fehlgeschlagen";
-            wsStatus.style.color = "#ff4081";
-        };
+        ws.onerror = () => { wsStatus.innerText = "🔴 Fehler"; wsStatus.style.color = "#ff4081"; };
     }
-
-    // --- MODUS UMSCHALTEN ---
-    function setMode(mode) {
-        const body = document.body;
-        const adultBtn = document.getElementById('adultBtn');
-        const childBtn = document.getElementById('childBtn');
-        const statusLabel = document.getElementById('statusLabel');
-
-        if (mode === 'child') {
-            body.classList.add('child-mode');
-            adultBtn.classList.remove('active-mode');
-            childBtn.classList.add('active-mode');
-            statusLabel.innerText = "Jeff Zustand: Fröhlich (Kindermodus)";
-            localStorage.setItem('jeff_mode', 'child');
-            speak("Hallo! Ich bin Jeff. Wollen wir was lernen oder spielen?");
-        } else {
-            body.classList.remove('child-mode');
-            childBtn.classList.remove('active-mode');
-            adultBtn.classList.add('active-mode');
-            statusLabel.innerText = "Jeff Zustand: Bereit (Erwachsener)";
-            localStorage.setItem('jeff_mode', 'adult');
-            speak("System bereit. Erwachsenenmodus ist aktiv.");
-        }
-    }
-
-    if (localStorage.getItem('jeff_mode') === 'child') { setMode('child'); }
 </script>
 
 </body>
